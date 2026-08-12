@@ -104,6 +104,14 @@ _COLD_WORDS = ["just curious", "just exploring", "no timeline", "someday", "brow
 _GREETING_WORDS = {"hey", "hi", "hello", "dear", "greetings", "good", "morning", "afternoon", "evening", "yo", "hiya"}
 
 
+def _word_safe_truncate(text: str, max_len: int) -> str:
+    """Trim to max_len without cutting mid-word, appending an ellipsis if trimmed."""
+    text = text.strip()
+    if len(text) <= max_len:
+        return text
+    return text[:max_len].rsplit(" ", 1)[0].rstrip(",;:-") + "…"
+
+
 def _guess_name(text: str) -> str | None:
     m = re.search(
         r"(?:my name is|this is|i'?m|i am)\s+([A-Z][a-zA-Z'-]+(?:\s+[A-Z][a-zA-Z'-]+)?)",
@@ -148,12 +156,12 @@ def _mock_extract(text: str) -> dict[str, Any]:
             break
     if not need_sentence:
         first_line = text.strip().split("\n")[0]
-        need_sentence = first_line if len(first_line) <= 160 else first_line[:157].rsplit(" ", 1)[0] + "…"
+        need_sentence = _word_safe_truncate(first_line, 157)
 
     budget_hint = None
-    m = re.search(r"(\$[\d,]+(?:k|K)?(?:\s*-\s*\$?[\d,]+(?:k|K)?)?|\bbudget\b[^.\n]{0,40})", text)
+    m = re.search(r"(\$[\d,]+(?:k|K)?(?:\s*-\s*\$?[\d,]+(?:k|K)?)?|\bbudget\b[^.\n]{0,60})", text)
     if m:
-        budget_hint = m.group(0).strip()
+        budget_hint = _word_safe_truncate(m.group(0).strip(), 40)
 
     return {
         "name": _guess_name(text),
@@ -172,19 +180,20 @@ def _mock_reply(text: str, need: str, urgency: str = "warm") -> str:
     if urgency == "hot":
         body = (
             f"Thanks for the detail — this sounds like exactly the kind of project I take on, "
-            f"and I can move quickly. On {need_txt}, I'd love to jump on a short call this week "
-            f"to lock down scope and get started."
+            f"and I can move quickly. Based on what you shared — \"{need_txt}\" — I'd love to "
+            f"jump on a short call this week to lock down scope and get started."
         )
     elif urgency == "cold":
         body = (
-            f"Thanks for reaching out and for the context. On {need_txt} — happy to share more "
-            f"about how I typically work and rough ranges once you have a clearer sense of what "
-            f"you're looking for. No pressure at all, just let me know when it's useful to talk."
+            f"Thanks for reaching out and for the context. Regarding \"{need_txt}\" — happy to "
+            f"share more about how I typically work and rough ranges once you have a clearer "
+            f"sense of what you're looking for. No pressure at all, just let me know when it's "
+            f"useful to talk."
         )
     else:
         body = (
-            f"Thanks for reaching out — sounds like a good fit for what I build. On {need_txt} "
-            f"specifically, I'd love to hear a bit more about scope and timeline."
+            f"Thanks for reaching out — sounds like a good fit for what I build. Regarding "
+            f"\"{need_txt}\" specifically, I'd love to hear a bit more about scope and timeline."
         )
 
     cta = "Do you have 15 minutes this week for a quick call?" if urgency != "cold" else "Feel free to reply whenever it's useful."
