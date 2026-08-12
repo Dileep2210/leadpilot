@@ -60,6 +60,7 @@ def health():
         "status": "ok",
         "llm_mode": llm.llm_mode(),
         "sheets_mode": sheets.sheets_mode(),
+        "sheets_detail": sheets.sheets_detail(),
         "slack_mode": slack.slack_mode(),
     }
 
