@@ -113,12 +113,23 @@ export default function App() {
         </div>
 
         <div className="how-it-works">
-          <strong>How this works:</strong> this demo runs against a sandboxed Sheet and Slack
-          channel so visitors don't need to connect their own accounts. For a client, the exact
-          same LangGraph pipeline points at their real CRM, inbox, and Slack workspace instead —
-          the agent logic doesn't change, only the destinations do. When "demo mode" shows above,
-          it means no live credentials are configured for that step; the agent still runs the
-          full flow and shows exactly what would happen.
+          {health && health.llm_mode === "live" && health.sheets_mode === "live" && health.slack_mode === "live" ? (
+            <>
+              <strong>How this works:</strong> this is a genuinely live agent, not a simulation —
+              it's connected to a real Google Sheet and a real Slack channel (mine, not yours) so
+              you can see the actual end-to-end result. For a client engagement, the exact same
+              LangGraph pipeline points at their real CRM, inbox, and Slack workspace instead —
+              the agent logic doesn't change, only the destinations do.
+            </>
+          ) : (
+            <>
+              <strong>How this works:</strong> paste a lead above to see the full agent pipeline
+              run. Where a badge above shows "demo mode," it means live credentials aren't
+              configured for that step yet — the agent still runs the complete flow and shows
+              exactly what it would do once connected. For a client engagement, the same
+              LangGraph pipeline points at their real CRM, inbox, and Slack workspace instead.
+            </>
+          )}
         </div>
 
         <footer className="site-footer">
